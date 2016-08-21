@@ -48,7 +48,7 @@ static NSString * const kPDKPinterestWebOAuthURLString = @"https://api.pinterest
     static PDKClient *gClientSDK;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        gClientSDK = [[[self class] alloc] initWithBaseURL:[NSURL URLWithString:kPDKClientBaseURLString]];
+        gClientSDK = [[[self class] alloc] init];
     });
     return gClientSDK;
 }
@@ -60,9 +60,9 @@ static NSString * const kPDKPinterestWebOAuthURLString = @"https://api.pinterest
     [[self sharedInstance] setConfigured:YES];
 }
 
-- (instancetype)initWithBaseURL:(NSURL *)baseURL
+- (instancetype)init
 {
-    if (self = [super initWithBaseURL:baseURL]) {
+    if (self = [super init]) {
         _configured = NO;
         _authorized = NO;
     }
@@ -381,29 +381,6 @@ static void defaultFailureAction(PDKClientFailure failureBlock, NSError *error)
     } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
         defaultFailureAction(failureBlock, error);
     }];
-}
-
-#pragma mark - AFHTTPSessionManager overrides
-
-- (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request
-                               uploadProgress:(nullable void (^)(NSProgress *uploadProgress)) uploadProgressBlock
-                             downloadProgress:(nullable void (^)(NSProgress *downloadProgress)) downloadProgressBlock
-                            completionHandler:(nullable void (^)(NSURLResponse *response, id _Nullable responseObject,  NSError * _Nullable error))completionHandler {
-    
-    NSMutableURLRequest *mutableRequest = [request mutableCopy];
-    [mutableRequest setHTTPShouldHandleCookies:YES];
-    [mutableRequest setValue:@"no-cache, no-store" forHTTPHeaderField:@"Cache-Control"];
-    
-    return [super dataTaskWithRequest:mutableRequest uploadProgress:uploadProgressBlock downloadProgress:downloadProgressBlock completionHandler:completionHandler];
-}
-
-- (NSURLSessionUploadTask *)uploadTaskWithStreamedRequest:(NSURLRequest *)request
-                                                 progress:(void (^)(NSProgress *uploadProgress)) uploadProgressBlock
-                                        completionHandler:(void (^)(NSURLResponse *response, id responseObject, NSError *error))completionHandler
-{
-    NSMutableURLRequest *mutableRequest = [request mutableCopy];
-    [mutableRequest setHTTPShouldHandleCookies:YES];
-    return [super uploadTaskWithStreamedRequest:mutableRequest progress:uploadProgressBlock completionHandler:completionHandler];
 }
 
 #pragma mark - Helpers

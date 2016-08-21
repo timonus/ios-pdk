@@ -2,7 +2,6 @@
 //  Created by Ricky Cancro on 1/28/15.
 
 @import Foundation;
-#import <AFNetworking/AFNetworking.h>
 
 /**
  *  Permissions that you can request a user to authorize.
@@ -55,7 +54,7 @@ typedef void (^PDKPinUploadProgress)(CGFloat percentComplete);
  *  methods like getPath:parameters:success:failure:) or by using convience methods
  *  (like getPinsForBoard:success:failure)
  */
-@interface PDKClient : AFHTTPSessionManager
+@interface PDKClient : NSObject
 
 /**
  *  The assigned appId that is used to make API requests
