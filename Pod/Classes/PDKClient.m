@@ -625,32 +625,33 @@ static void defaultFailureAction(PDKClientFailure failureBlock, NSError *error)
                withSuccess:(PDKClientSuccess)successBlock
                 andFailure:(PDKClientFailure)failureBlock;
 {
-    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    parameters[@"board"] = boardId;
-    parameters[@"note"] = pinDescription;
-    if (link != nil) {
-        parameters[@"link"] = link;
-    }
+    // TODO:
     
-    NSString *path = @"pins/";
-    NSString *urlString = [[NSURL URLWithString:path relativeToURL:self.baseURL] absoluteString];
-    [self POST:urlString parameters:[self signParameters:parameters] constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
-        NSData *imageData = UIImageJPEGRepresentation(image, 1.0f);
-        [formData appendPartWithFileData:imageData
-                                    name:@"image"
-                                fileName:@"myphoto.jpg"
-                                mimeType:@"image/jpeg"];
-    } progress:^(NSProgress * _Nonnull uploadProgress) {
-        if (progressBlock && [uploadProgress totalUnitCount] > 0) {
-            CGFloat percentComplete = (CGFloat)[uploadProgress completedUnitCount]/(CGFloat)[uploadProgress totalUnitCount];
-            progressBlock(percentComplete);
-        }
-    } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        defaultSuccessAction(successBlock, task, responseObject, parameters, path);
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        defaultFailureAction(failureBlock, error);
-    }];
-    
+//    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+//    parameters[@"board"] = boardId;
+//    parameters[@"note"] = pinDescription;
+//    if (link != nil) {
+//        parameters[@"link"] = link;
+//    }
+//    
+//    NSString *path = @"pins/";
+//    NSString *urlString = [[NSURL URLWithString:path relativeToURL:self.baseURL] absoluteString];
+//    [self POST:urlString parameters:[self signParameters:parameters] constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
+//        NSData *imageData = UIImageJPEGRepresentation(image, 1.0f);
+//        [formData appendPartWithFileData:imageData
+//                                    name:@"image"
+//                                fileName:@"myphoto.jpg"
+//                                mimeType:@"image/jpeg"];
+//    } progress:^(NSProgress * _Nonnull uploadProgress) {
+//        if (progressBlock && [uploadProgress totalUnitCount] > 0) {
+//            CGFloat percentComplete = (CGFloat)[uploadProgress completedUnitCount]/(CGFloat)[uploadProgress totalUnitCount];
+//            progressBlock(percentComplete);
+//        }
+//    } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+//        defaultSuccessAction(successBlock, task, responseObject, parameters, path);
+//    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+//        defaultFailureAction(failureBlock, error);
+//    }];
 }
 
 @end
