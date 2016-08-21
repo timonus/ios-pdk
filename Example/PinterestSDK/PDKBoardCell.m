@@ -11,7 +11,7 @@
 #import "PDKBoard.h"
 #import "PDKImageInfo.h"
 
-#import <AFNetworking/UIImageView+AFNetworking.h>
+#import "UIImageView+PDKNetworkUtilities.h"
 
 @interface PDKBoardCell()
 @property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;

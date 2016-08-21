@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		226187B31D6A775E00BCA62A /* UIImageView+PDKNetworkUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 226187B21D6A775E00BCA62A /* UIImageView+PDKNetworkUtilities.m */; };
 		3BE66E9A225691C064085FE0 /* libPods-PinterestSDK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C4589771CC73A2150EE825F2 /* libPods-PinterestSDK.a */; };
 		6003F58E195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
 		6003F590195388D20070C39A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58F195388D20070C39A /* CoreGraphics.framework */; };
@@ -41,6 +42,8 @@
 
 /* Begin PBXFileReference section */
 		023BDEE887C219DA697EEAB7 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		226187B11D6A775E00BCA62A /* UIImageView+PDKNetworkUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImageView+PDKNetworkUtilities.h"; sourceTree = "<group>"; };
+		226187B21D6A775E00BCA62A /* UIImageView+PDKNetworkUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImageView+PDKNetworkUtilities.m"; sourceTree = "<group>"; };
 		6003F58A195388D20070C39A /* PinterestSDK.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PinterestSDK.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6003F58D195388D20070C39A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		6003F58F195388D20070C39A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -166,6 +169,8 @@
 				6003F594195388D20070C39A /* Supporting Files */,
 				9C0C91161AB4F97E0061820A /* PDKBoardCell.h */,
 				9C0C91171AB4F97E0061820A /* PDKBoardCell.m */,
+				226187B11D6A775E00BCA62A /* UIImageView+PDKNetworkUtilities.h */,
+				226187B21D6A775E00BCA62A /* UIImageView+PDKNetworkUtilities.m */,
 				9C0C91181AB4F97E0061820A /* PDKBoardCell.xib */,
 			);
 			path = PinterestSDK;
@@ -359,6 +364,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				226187B31D6A775E00BCA62A /* UIImageView+PDKNetworkUtilities.m in Sources */,
 				9C93F8BB1AB0CC360001844E /* PDKPinsViewController.m in Sources */,
 				9C0C91121AB393E10061820A /* PDKPinCell.m in Sources */,
 				6003F59E195388D20070C39A /* PDKAppDelegate.m in Sources */,

@@ -14,7 +14,7 @@
 #import "PDKPinCell.h"
 #import "PDKResponseObject.h"
 
-#import <AFNetworking/UIImageView+AFNetworking.h>
+#import "UIImageView+PDKNetworkUtilities.h"
 
 @interface PDKPinsViewController () <UICollectionViewDataSource, UICollectionViewDelegate>
 @property (nonatomic, strong) UICollectionView *collectionView;
