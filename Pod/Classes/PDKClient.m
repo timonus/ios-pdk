@@ -298,11 +298,11 @@ static NSString * const kPDKPinterestWebOAuthURLString = @"https://api.pinterest
     return handled;
 }
 
-static void defaultSuccessAction(PDKClientSuccess successBlock, NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject, NSDictionary *parameters, NSString *path);
-static void defaultSuccessAction(PDKClientSuccess successBlock, NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject, NSDictionary *parameters, NSString *path)
+static void defaultSuccessAction(PDKClientSuccess successBlock, NSURLSessionDataTask * _Nonnull task, NSDictionary *_Nullable responseDictionary, NSDictionary *parameters, NSString *path);
+static void defaultSuccessAction(PDKClientSuccess successBlock, NSURLSessionDataTask * _Nonnull task, NSDictionary *_Nullable responseDictionary, NSDictionary *parameters, NSString *path)
 {
-    if (successBlock && [responseObject isKindOfClass:[NSDictionary class]]) {
-        PDKResponseObject *response = [[PDKResponseObject alloc] initWithDictionary:(NSDictionary *)responseObject response:(NSHTTPURLResponse *)[task response] path:path parameters:parameters];
+    if (successBlock) {
+        PDKResponseObject *response = [[PDKResponseObject alloc] initWithDictionary:responseDictionary response:(NSHTTPURLResponse *)[task response] path:path parameters:parameters];
         successBlock(response);
     }
 }
@@ -317,17 +317,58 @@ static void defaultFailureAction(PDKClientFailure failureBlock, NSError *error)
 
 #pragma mark - Endpoints
 
+- (void)sendRequestWithPath:(NSString *const)path parameters:(NSDictionary<NSString *, NSString *> *const)parameters method:(NSString *const)method successBlock:(void (^)(NSURLSessionTask *const task, NSDictionary *parsedResponse))successBlock failureBlock:(void (^)(NSURLSessionTask *const task, NSError *const error))failureBlock
+{
+    NSURLComponents *const components = [[NSURLComponents alloc] initWithString:kPDKClientBaseURLString];
+    components.path = [components.path stringByAppendingPathComponent:path];
+    NSMutableArray<NSURLQueryItem *> *const queryItems = [NSMutableArray new];
+    [parameters enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSString *value, BOOL *stop) {
+        [queryItems addObject:[NSURLQueryItem queryItemWithName:name value:value]];
+    }];
+    
+    if (self.oauthToken) {
+        [queryItems addObject:[NSURLQueryItem queryItemWithName:@"access_token" value:self.oauthToken]];
+    }
+    
+    components.queryItems = queryItems;
+    
+    NSURL *const url = components.URL;
+    NSMutableURLRequest *const request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPMethod = method;
+    
+    // TODO: Make sure this isn't causing a retain cycle.
+    NSURLSessionTask *const task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        NSDictionary *parsedResponseDictionary = nil;
+        if (error == nil && data.length > 0) {
+            id parsedResponse = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+            if ([parsedResponse isKindOfClass:[NSDictionary class]]) {
+                parsedResponseDictionary = parsedResponse;
+            }
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (error) {
+                failureBlock(task, error);
+            } else {
+                successBlock(task, parsedResponseDictionary);
+            }
+        });
+    }];
+    [task resume];
+}
+
 - (void)getPath:(NSString *)path
      parameters:(NSDictionary *)parameters
     withSuccess:(PDKClientSuccess)successBlock
      andFailure:(PDKClientFailure)failureBlock;
 {
-    NSString *urlString = [[NSURL URLWithString:path relativeToURL:self.baseURL] absoluteString];
-    [self GET:urlString parameters:[self signParameters:parameters] progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        defaultSuccessAction(successBlock, task, responseObject, parameters, path);
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        defaultFailureAction(failureBlock, error);
-    }];
+    [self sendRequestWithPath:path
+                   parameters:parameters
+                       method:@"GET"
+                 successBlock:^(NSURLSessionTask *const task, id responseObject) {
+                     defaultSuccessAction(successBlock, task, responseObject, parameters, path);
+                 } failureBlock:^(NSURLSessionTask *const task, NSError *const error) {
+                     defaultFailureAction(failureBlock, error);
+                 }];
     
 }
 
@@ -336,12 +377,14 @@ static void defaultFailureAction(PDKClientFailure failureBlock, NSError *error)
      withSuccess:(PDKClientSuccess)successBlock
       andFailure:(PDKClientFailure)failureBlock;
 {
-    NSString *urlString = [[NSURL URLWithString:path relativeToURL:self.baseURL] absoluteString];
-    [self POST:urlString parameters:[self signParameters:parameters] progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        defaultSuccessAction(successBlock, task, responseObject, parameters, path);
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        defaultFailureAction(failureBlock, error);
-    }];
+    [self sendRequestWithPath:path
+                   parameters:parameters
+                       method:@"POST"
+                 successBlock:^(NSURLSessionTask *const task, id responseObject) {
+                     defaultSuccessAction(successBlock, task, responseObject, parameters, path);
+                 } failureBlock:^(NSURLSessionTask *const task, NSError *const error) {
+                     defaultFailureAction(failureBlock, error);
+                 }];
 }
 
 - (void)putPath:(NSString *)path
@@ -349,12 +392,14 @@ static void defaultFailureAction(PDKClientFailure failureBlock, NSError *error)
     withSuccess:(PDKClientSuccess)successBlock
      andFailure:(PDKClientFailure)failureBlock;
 {
-    NSString *urlString = [[NSURL URLWithString:path relativeToURL:self.baseURL] absoluteString];
-    [self PUT:urlString parameters:[self signParameters:parameters] success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        defaultSuccessAction(successBlock, task, responseObject, parameters, path);
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        defaultFailureAction(failureBlock, error);
-    }];
+    [self sendRequestWithPath:path
+                   parameters:parameters
+                       method:@"PUT"
+                 successBlock:^(NSURLSessionTask *const task, NSDictionary *parsedResponse) {
+                     defaultSuccessAction(successBlock, task, parsedResponse, parameters, path);
+                 } failureBlock:^(NSURLSessionTask *const task, NSError *const error) {
+                     defaultFailureAction(failureBlock, error);
+                 }];
 }
 
 - (void)patchPath:(NSString *)path
@@ -362,12 +407,14 @@ static void defaultFailureAction(PDKClientFailure failureBlock, NSError *error)
     withSuccess:(PDKClientSuccess)successBlock
      andFailure:(PDKClientFailure)failureBlock;
 {
-    NSString *urlString = [[NSURL URLWithString:path relativeToURL:self.baseURL] absoluteString];
-    [self PATCH:urlString parameters:[self signParameters:parameters] success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        defaultSuccessAction(successBlock, task, responseObject, parameters, path);
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        defaultFailureAction(failureBlock, error);
-    }];
+    [self sendRequestWithPath:path
+                   parameters:parameters
+                       method:@"PATCH"
+                 successBlock:^(NSURLSessionTask *const task, NSDictionary *parsedResponse) {
+                     defaultSuccessAction(successBlock, task, parsedResponse, parameters, path);
+                 } failureBlock:^(NSURLSessionTask *const task, NSError *const error) {
+                     defaultFailureAction(failureBlock, error);
+                 }];
 }
 
 - (void)deletePath:(NSString *)path
@@ -375,24 +422,14 @@ static void defaultFailureAction(PDKClientFailure failureBlock, NSError *error)
        withSuccess:(PDKClientSuccess)successBlock
         andFailure:(PDKClientFailure)failureBlock;
 {
-    NSString *urlString = [[NSURL URLWithString:path relativeToURL:self.baseURL] absoluteString];
-    [self DELETE:urlString parameters:[self signParameters:parameters] success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        defaultSuccessAction(successBlock, task, responseObject, parameters, path);
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        defaultFailureAction(failureBlock, error);
-    }];
-}
-
-#pragma mark - Helpers
-
-- (NSDictionary *)signParameters:(NSDictionary *)parameters
-{
-    NSMutableDictionary *signedParameters = [NSMutableDictionary dictionaryWithDictionary:parameters];
-    
-    if (self.oauthToken && signedParameters[@"access_token"] == nil) {
-        signedParameters[@"access_token"] = self.oauthToken;
-    }
-    return signedParameters;
+    [self sendRequestWithPath:path
+                   parameters:parameters
+                       method:@"DELETE"
+                 successBlock:^(NSURLSessionTask *const task, id responseObject) {
+                     defaultSuccessAction(successBlock, task, responseObject, parameters, path);
+                 } failureBlock:^(NSURLSessionTask *const task, NSError *const error) {
+                     defaultFailureAction(failureBlock, error);
+                 }];
 }
 
 #pragma mark - User Endpoints
