@@ -30,6 +30,28 @@ static NSString * const PDKPinterestSDKUserIdKey = @"PDKPinterestSDKUserIdKey";
 static NSString * const kPDKPinterestAppOAuthURLString = @"pinterestsdk.v1://oauth/";
 static NSString * const kPDKPinterestWebOAuthURLString = @"https://api.pinterest.com/oauth/";
 
+//@interface PDKURLSession : NSURLSession <NSURLSessionTaskDelegate>
+//
+//+ (instancetype)sharedSessionTaskDelegate;
+//
+//@property (nonatomic, strong)
+//
+//@end
+//
+//@implementation PDKURLSessionTaskDelegate
+//
+//- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error
+//{
+//    // We cool, bro.
+//}
+//
+//- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didSendBodyData:(int64_t)bytesSent totalBytesSent:(int64_t)totalBytesSent totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend
+//{
+//    // Signal progress
+//}
+//
+//@end
+
 @interface PDKClient()
 @property (nonatomic, assign) BOOL configured;
 @property (nonatomic, copy, readwrite) NSString *appId;
@@ -317,7 +339,7 @@ static void defaultFailureAction(PDKClientFailure failureBlock, NSError *error)
 
 #pragma mark - Endpoints
 
-- (void)sendRequestWithPath:(NSString *const)path parameters:(NSDictionary<NSString *, NSString *> *const)parameters method:(NSString *const)method successBlock:(void (^)(NSURLSessionTask *const task, NSDictionary *parsedResponse))successBlock failureBlock:(void (^)(NSURLSessionTask *const task, NSError *const error))failureBlock
+- (NSMutableURLRequest *)requestWithPath:(NSString *const)path parameters:(NSDictionary<NSString *, NSString *> *const)parameters method:(NSString *const)method
 {
     NSURLComponents *const components = [[NSURLComponents alloc] initWithString:kPDKClientBaseURLString];
     components.path = [components.path stringByAppendingPathComponent:path];
@@ -335,6 +357,13 @@ static void defaultFailureAction(PDKClientFailure failureBlock, NSError *error)
     NSURL *const url = components.URL;
     NSMutableURLRequest *const request = [NSMutableURLRequest requestWithURL:url];
     request.HTTPMethod = method;
+    
+    return request;
+}
+
+- (void)sendRequestWithPath:(NSString *const)path parameters:(NSDictionary<NSString *, NSString *> *const)parameters method:(NSString *const)method successBlock:(void (^)(NSURLSessionTask *const task, NSDictionary *parsedResponse))successBlock failureBlock:(void (^)(NSURLSessionTask *const task, NSError *const error))failureBlock
+{
+    NSURLRequest *const request = [self requestWithPath:path parameters:parameters method:method];
     
     // TODO: Make sure this isn't causing a retain cycle.
     NSURLSessionTask *const task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
@@ -625,15 +654,16 @@ static void defaultFailureAction(PDKClientFailure failureBlock, NSError *error)
                withSuccess:(PDKClientSuccess)successBlock
                 andFailure:(PDKClientFailure)failureBlock;
 {
-    // TODO:
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    parameters[@"board"] = boardId;
+    parameters[@"note"] = pinDescription;
+    if (link != nil) {
+        parameters[@"link"] = link;
+    }
+    NSMutableURLRequest *const request = [self requestWithPath:@"pins/" parameters:parameters method:@"POST"];
     
-//    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-//    parameters[@"board"] = boardId;
-//    parameters[@"note"] = pinDescription;
-//    if (link != nil) {
-//        parameters[@"link"] = link;
-//    }
-//    
+    // TODO: Post body, yo.
+    
 //    NSString *path = @"pins/";
 //    NSString *urlString = [[NSURL URLWithString:path relativeToURL:self.baseURL] absoluteString];
 //    [self POST:urlString parameters:[self signParameters:parameters] constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
